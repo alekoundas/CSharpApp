@@ -5,19 +5,15 @@ public class PostService : IPostService
     private readonly ILogger<PostService> _logger;
     private readonly HttpClient _client;
 
-    private readonly string? _baseUrl;
-
     public PostService(ILogger<PostService> logger,
-        IConfiguration configuration)
+        IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
-        _client = new HttpClient();
-        _baseUrl = configuration["BaseUrl"];
+        _client = httpClientFactory.CreateHttpClient();
     }
 
     public async Task<PostRecord?> GetByRecordId(int id)
     {
-        _client.BaseAddress = new Uri(_baseUrl!);
         var response = await _client.GetFromJsonAsync<PostRecord>($"posts/{id}");
 
         return response;
@@ -25,7 +21,6 @@ public class PostService : IPostService
 
     public async Task<ReadOnlyCollection<PostRecord>> GetAllRecords()
     {
-        _client.BaseAddress = new Uri(_baseUrl!);
         var response = await _client.GetFromJsonAsync<List<PostRecord>>($"posts");
 
         return response!.AsReadOnly();
@@ -33,7 +28,6 @@ public class PostService : IPostService
 
     public async Task<bool> InsertRecord(PostRecord postRecord)
     {
-        _client.BaseAddress = new Uri(_baseUrl!);
         var response = await _client.PostAsJsonAsync($"posts", postRecord);
 
         return response.IsSuccessStatusCode;
@@ -41,7 +35,6 @@ public class PostService : IPostService
 
     public async Task<PostRecord?> DeleteRecord(int id)
     {
-        _client.BaseAddress = new Uri(_baseUrl!);
         var response = await _client.DeleteFromJsonAsync<PostRecord>($"posts/{id}");
 
         return response;

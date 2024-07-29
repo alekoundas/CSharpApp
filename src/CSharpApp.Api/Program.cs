@@ -12,7 +12,6 @@ builder.Services.AddDefaultConfiguration();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<HttpClient>();
 
 var app = builder.Build();
 
@@ -57,7 +56,6 @@ app.MapGet("/posts/{id}", async ([FromRoute] int id, IPostService postService) =
     .WithName("GetPostsById")
     .WithOpenApi();
 
-
 app.MapPost("/posts", async (PostRecord postRecord, IPostService postService) =>
 {
     var post = await postService.InsertRecord(postRecord);
@@ -65,7 +63,6 @@ app.MapPost("/posts", async (PostRecord postRecord, IPostService postService) =>
 })
     .WithName("InsertPost")
     .WithOpenApi();
-
 
 app.MapDelete("/posts/{id}", async ([FromRoute] int id, IPostService postService) =>
 {
