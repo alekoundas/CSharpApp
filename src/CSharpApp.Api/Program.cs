@@ -1,4 +1,5 @@
 using CSharpApp.Core.Dtos;
+using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Todos via TodoService.
 app.MapGet("/todos", async (ITodoService todoService) =>
     {
         var todos = await todoService.GetAllTodos();
@@ -40,6 +42,7 @@ app.MapGet("/todos/{id}", async ([FromRoute] int id, ITodoService todoService) =
     .WithName("GetTodosById")
     .WithOpenApi();
 
+// Posts via PostService.
 app.MapGet("/posts", async (IPostService postService) =>
 {
     var posts = await postService.GetAllRecords();
@@ -53,7 +56,7 @@ app.MapGet("/posts/{id}", async ([FromRoute] int id, IPostService postService) =
     var post = await postService.GetByRecordId(id);
     return post;
 })
-    .WithName("GetPostsById")
+    .WithName("GetPostById")
     .WithOpenApi();
 
 app.MapPost("/posts", async (PostRecord postRecord, IPostService postService) =>
@@ -64,12 +67,66 @@ app.MapPost("/posts", async (PostRecord postRecord, IPostService postService) =>
     .WithName("InsertPost")
     .WithOpenApi();
 
+
+app.MapPut("/posts", async (PostRecord postRecord, IPostService postService) =>
+{
+    var post = await postService.UpdateRecord(postRecord);
+    return post;
+})
+    .WithName("UpdatePost")
+    .WithOpenApi();
+
+
 app.MapDelete("/posts/{id}", async ([FromRoute] int id, IPostService postService) =>
 {
     var post = await postService.DeleteRecord(id);
     return post;
 })
     .WithName("DeletePost")
+    .WithOpenApi();
+
+
+// Comments via generic wrapper.
+app.MapGet("/comments", async (IHttpClientWrapper httpClientWrapper) =>
+{
+    var comments = await httpClientWrapper.GetAllRecords<CommentRecord>("/comments");
+    return comments;
+})
+    .WithName("GetComments")
+    .WithOpenApi();
+
+app.MapGet("/comments/{id}", async ([FromRoute] int id, IHttpClientWrapper httpClientWrapper) =>
+{
+    var comment = await httpClientWrapper.GetRecordById<CommentRecord>($"/comments/{id}");
+    return comment;
+})
+    .WithName("GetCommentById")
+    .WithOpenApi();
+
+app.MapPost("/comments", async (CommentRecord postRecord, IHttpClientWrapper httpClientWrapper) =>
+{
+    var comment = await httpClientWrapper.InsertRecord("/comments", postRecord);
+    return comment;
+})
+    .WithName("InsertComment")
+    .WithOpenApi();
+
+
+app.MapPut("/comments", async (PostRecord postRecord, IHttpClientWrapper httpClientWrapper) =>
+{
+    var comment = await httpClientWrapper.UpdateRecord("/comments", postRecord);
+    return comment;
+})
+    .WithName("UpdateComment")
+    .WithOpenApi();
+
+
+app.MapDelete("/comments/{id}", async ([FromRoute] int id, IHttpClientWrapper httpClientWrapper) =>
+{
+    var comment = await httpClientWrapper.DeleteRecord<CommentRecord>($"/comments/{id}");
+    return comment;
+})
+    .WithName("DeleteComment")
     .WithOpenApi();
 
 app.Run();

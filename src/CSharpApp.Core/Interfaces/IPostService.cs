@@ -4,6 +4,7 @@ public interface IPostService
 {
     Task<PostRecord?> GetByRecordId(int id);
     Task<ReadOnlyCollection<PostRecord>> GetAllRecords();
-    Task<bool> InsertRecord(PostRecord postRecord);
+    Task<PostRecord?> InsertRecord(PostRecord postRecord);
+    Task<PostRecord?> UpdateRecord(PostRecord postRecord);
     Task<PostRecord?> DeleteRecord(int id);
 }
