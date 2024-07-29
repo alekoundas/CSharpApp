@@ -1,5 +1,4 @@
 using CSharpApp.Core.Dtos;
-using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,18 +102,19 @@ app.MapGet("/comments/{id}", async ([FromRoute] int id, IHttpClientWrapper httpC
     .WithName("GetCommentById")
     .WithOpenApi();
 
-app.MapPost("/comments", async (CommentRecord postRecord, IHttpClientWrapper httpClientWrapper) =>
+app.MapPost("/comments", async (CommentRecord commentRecord, IHttpClientWrapper httpClientWrapper) =>
 {
-    var comment = await httpClientWrapper.InsertRecord("/comments", postRecord);
+    var comment = await httpClientWrapper.InsertRecord("/comments", commentRecord);
     return comment;
 })
     .WithName("InsertComment")
     .WithOpenApi();
 
 
-app.MapPut("/comments", async (PostRecord postRecord, IHttpClientWrapper httpClientWrapper) =>
+app.MapPut("/comments", async (CommentRecord commentRecord, IHttpClientWrapper httpClientWrapper) =>
 {
-    var comment = await httpClientWrapper.UpdateRecord("/comments", postRecord);
+    var id = commentRecord.Id;
+    var comment = await httpClientWrapper.UpdateRecord($"/comments/{id}", commentRecord);
     return comment;
 })
     .WithName("UpdateComment")

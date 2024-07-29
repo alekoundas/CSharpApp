@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace CSharpApp.Application.Wrappers
+﻿namespace CSharpApp.Application.Wrappers
 {
     public class HttpClientWrapper : IHttpClientWrapper
     {
@@ -26,15 +24,23 @@ namespace CSharpApp.Application.Wrappers
 
         public async Task<TEntity?> GetRecordById<TEntity>(string url)
         {
-            var response = await _client.GetFromJsonAsync<TEntity>(url);
-            return response;
+            var response = await _client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return default(TEntity);
+
+            var responseRecord = await response.Content.ReadFromJsonAsync<TEntity?>();
+
+            return responseRecord;
         }
 
         public async Task<TEntity?> InsertRecord<TEntity>(string url, TEntity record)
         {
             var response = await _client.PostAsJsonAsync(url, record);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var responseRecord = JsonConvert.DeserializeObject<TEntity>(responseBody);
+            if (!response.IsSuccessStatusCode)
+                return default(TEntity);
+
+            var responseRecord = await response.Content.ReadFromJsonAsync<TEntity?>();
 
             return responseRecord;
         }
@@ -42,16 +48,25 @@ namespace CSharpApp.Application.Wrappers
         public async Task<TEntity?> UpdateRecord<TEntity>(string url, TEntity record)
         {
             var response = await _client.PutAsJsonAsync(url, record);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var responseRecord = JsonConvert.DeserializeObject<TEntity>(responseBody);
+            if (!response.IsSuccessStatusCode)
+                return default(TEntity);
+
+            var responseRecord = await response.Content.ReadFromJsonAsync<TEntity?>();
 
             return responseRecord;
         }
 
         public async Task<TEntity?> DeleteRecord<TEntity>(string url)
         {
-            var response = await _client.DeleteFromJsonAsync<TEntity>(url);
-            return response;
+            var response = await _client.DeleteAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return default(TEntity);
+
+            var responseBody = await response.Content.ReadFromJsonAsync<TEntity>();
+            //var responseRecord = JsonConvert.DeserializeObject<TEntity?>(responseBody);
+
+            return responseBody;
         }
     }
 }

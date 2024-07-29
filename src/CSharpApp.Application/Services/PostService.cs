@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace CSharpApp.Application.Services;
 
 public class PostService : IPostService
@@ -16,8 +14,13 @@ public class PostService : IPostService
 
     public async Task<PostRecord?> GetByRecordId(int id)
     {
-        var response = await _client.GetFromJsonAsync<PostRecord>($"posts/{id}");
-        return response;
+        var response = await _client.GetAsync($"posts/{id}");
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var responseRecord = await response.Content.ReadFromJsonAsync<PostRecord?>();
+
+        return responseRecord;
     }
 
     public async Task<ReadOnlyCollection<PostRecord>> GetAllRecords()
@@ -29,19 +32,24 @@ public class PostService : IPostService
     public async Task<PostRecord?> InsertRecord(PostRecord postRecord)
     {
         var response = await _client.PostAsJsonAsync($"posts", postRecord);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var record = JsonConvert.DeserializeObject<PostRecord>(responseBody);
+        if(!response.IsSuccessStatusCode)
+            return null;
 
-        return record;
+        var responseRecord = await response.Content.ReadFromJsonAsync<PostRecord?>();
+
+        return responseRecord;
     }
 
     public async Task<PostRecord?> UpdateRecord(PostRecord postRecord)
     {
-        var response = await _client.PutAsJsonAsync($"posts", postRecord);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var record = JsonConvert.DeserializeObject<PostRecord>(responseBody);
+        var id = postRecord.Id;
+        var response = await _client.PutAsJsonAsync($"posts/{id}", postRecord);
+        if (!response.IsSuccessStatusCode)
+            return null;
 
-        return record;
+        var responseRecord = await response.Content.ReadFromJsonAsync<PostRecord?>();
+
+        return responseRecord;
     }
 
     public async Task<PostRecord?> DeleteRecord(int id)
